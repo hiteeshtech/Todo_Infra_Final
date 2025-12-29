@@ -1,0 +1,32 @@
+trigger: none
+pool: Hitesh_Pool
+stages:
+  - stage: resource_deployement
+    jobs:
+      - job: resource_deployement
+        steps:
+          - task: TerraformInstaller@1
+            displayName: 'terraform install'
+            inputs:
+              terraformVersion: 'latest'
+
+          - task: TerraformTask@5
+            displayName: 'terraform init'
+            inputs:
+              provider: 'azurerm'
+              command: 'init'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/Environments/Dev'
+              backendServiceArm: 'terraform-sp-login'
+              backendAzureRmResourceGroupName: 'rg-workload'
+              backendAzureRmStorageAccountName: 'stgworkload'
+              backendAzureRmContainerName: 'containerworkload'
+              backendAzureRmKey: 'terraform.tfstate'
+
+          - task: TerraformTask@5
+            displayName: 'terraform apply'
+            inputs:
+              provider: 'azurerm'
+              command: 'apply'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/Environments/Dev'
+              commandOptions: '-auto-approve -var="mssql_server_id=dummy"'
+              environmentServiceNameAzureRM: 'terraform-sp-login'
